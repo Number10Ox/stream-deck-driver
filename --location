@@ -19,7 +19,7 @@
 * schannel: stored credential handle in session cache
 > GET /api/public/decklist/1761.json HTTP/1.1
 > Host: arkhamdb.com
-> User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_7; en-us) AppleWebKit/533.4 (KHTML, like Gecko) Version/4.1 Safari/533.4
+> User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_2) AppleWebKit/535.7 (KHTML, like Gecko) Chrome/16.0.905.0 Safari/535.7
 > Accept: */*
 > Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.3
 > Accept-Language: en-US,en;q=0.8
@@ -43,7 +43,7 @@
 * schannel: decrypted data returned 830
 * schannel: decrypted data buffer: offset 0 length 102400
 < HTTP/1.1 200 OK
-< Date: Thu, 06 Jul 2017 03:00:06 GMT
+< Date: Thu, 06 Jul 2017 22:15:08 GMT
 < Server: Apache/2.4.18 (Ubuntu)
 < Cache-Control: max-age=600, public
 < Access-Control-Allow-Origin: *
