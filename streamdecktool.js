@@ -6,6 +6,7 @@ const sharp = require('sharp');
 const streamDeck = require('elgato-stream-deck');
 const curl = require('curlrequest');
 const fs = require('fs');
+const { exec } = require('child_process');
 
 //=============================== CONFIGURATION ===============================
 // Set to deck number with cards you want to assign to buttons within 
@@ -26,6 +27,8 @@ const reservedFolderButtons = [STREAMDECK_BACK_BUTTON_KEY_INDEX];
 const imageCacheDirectory = 'imagecache';
 const cardImageDirectory = 'images';
 const genericCardButtonIconFileName = 'icons/cardtemplate.png';
+
+const cardActionCommand = 'bin\\open_url_cmd.bat';
 
 // Fill with lst of buttons in current StreamDeck configuration that open 
 // folders. This is necessary to track which "page" the StreamDeck is currently
@@ -148,7 +151,7 @@ function populateFoldersWithCards(cardList) {
  			var cardId = cardsToAdd.shift();
 			cardFolders[folderIndex][keyIndex] = cardId;
 
-			// TODONOW Add a flag to generate images optionally
+			// TODO Add a flag to generate images optionally
  			var cachedKeyIconFileName = generateCachedIconFileName(folderIndex, keyIndex);
 			var keyImageFileName = imageFileNameForCard(cardId, folderIndex, keyIndex);
 
@@ -182,7 +185,7 @@ function setKeyImage(keyIndex, keyImageFileName) {
 function displayCardsInCurrentFolder()
 {
 	for (var keyIndex in cardFolders[currentFolderIndex]) {
-		if (typeof cardFolders[currentFolderIndex][keyIndex] !== 'undefined'&& cardFolders[currentFolderIndex][keyIndex] !== null && cardFolders[currentFolderIndex][keyIndex] !== 0) {
+		if (typeof cardFolders[currentFolderIndex][keyIndex] !== 'undefined' && cardFolders[currentFolderIndex][keyIndex] !== null && cardFolders[currentFolderIndex][keyIndex] !== 0) {
 			var cardId = cardFolders[currentFolderIndex][keyIndex];
 			var cachedKeyIconFileName = generateCachedIconFileName(currentFolderIndex, keyIndex);
 			console.log("DISPLAYING CARD: folderId = %d keyIndex = %d cardId = %d cachedIconImage=%s", currentFolderIndex, keyIndex, cardId, cachedKeyIconFileName);
@@ -191,7 +194,15 @@ function displayCardsInCurrentFolder()
 	}
 }
 
-/*  Handling key presses
+function executeCardAction(cardId, folderIndex, keyIndex) {
+	var cardImageFileName = path.resolve(__dirname, imageFileNameForCard(cardId, folderIndex, keyIndex));
+	var command =  cardActionCommand + ' ' + cardImageFileName ;
+	console.log('Executing %s', command);
+	exec(command);
+}
+
+/* 
+ * Handling key presses
  */
 streamDeck.on('up', selectedKeyIndex => {
 	if (currentFolderIndex == STREAM_DECK_MAIN_FOLDER_INDEX) {
@@ -211,11 +222,15 @@ streamDeck.on('up', selectedKeyIndex => {
 		// Return to main folder
 		currentFolderIndex = STREAM_DECK_MAIN_FOLDER_INDEX;
 	} else {
-		// Do action for button in card folder
-		pass;
+		if (typeof cardFolders[currentFolderIndex][selectedKeyIndex] !== 'undefined'
+			&& cardFolders[currentFolderIndex][selectedKeyIndex] !== null
+		    && cardFolders[currentFolderIndex][selectedKeyIndex] !== 0) {
+				var cardId =  cardFolders[currentFolderIndex][selectedKeyIndex];
+				executeCardAction(cardId, currentFolderIndex, selectedKeyIndex);
+		}
 	}
 
-    console.log('current folder index: %d', currentFolderIndex);
+    //console.log('current folder index: %d', currentFolderIndex);
 });
 
 streamDeck.on('error', error => {

@@ -68,7 +68,7 @@ def loadDeck():
 
 def main():
 	cardList = loadCardList()
-	#printCardList(cardList)
+	printCardList(cardList)
 
 	#deck = loadDeck()
 	#pprint(deck)
