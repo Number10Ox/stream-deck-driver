@@ -25,17 +25,17 @@ IMAGE_CACHE_DIR = 'images/'
 def printCardList(cardList):
 	for card in cardList:
 		if CARD_NAME_KEY in card and CARD_IMAGE_KEY in card:
-			print "Card name: %s, imagesrc: %s" % (card[CARD_NAME_KEY], card[CARD_IMAGE_KEY])
+			print("Card name: %s, imagesrc: %s", card[CARD_NAME_KEY], card[CARD_IMAGE_KEY])
 			#pprint(card)
 		elif CARD_NAME_KEY in card and CARD_BACKIMAGE_KEY in card:
-			print "Card name: %s, imagesrc: %s" % (card[CARD_NAME_KEY], card[CARD_BACKIMAGE_KEY])
+			print("Card name: %s, imagesrc: %s", card[CARD_NAME_KEY], card[CARD_BACKIMAGE_KEY])
 			#pprint(card)
 		else:
-			print "------- card without image -------"
+			print("------- card without image -------")
 			if CARD_NAME_KEY in card:
-				print "Card name: %s" % card[CARD_NAME_KEY]
+				print("Card name: %s", card[CARD_NAME_KEY])
 			if CARD_IMAGE_KEY in card:
-				print "Card image: %s" % card[CARD_IMAGE_KEY]
+				print("Card image: %s", card[CARD_IMAGE_KEY])
 			pprint(card)
 
 def loadCardList():
@@ -52,13 +52,13 @@ def downloadCardImages(cardList, imageDirectory):
 		elif CARD_BACKIMAGE_KEY in card:
 			downloadCardImage(card[CARD_BACKIMAGE_KEY], imageDirectory)
 		else:
-			print "Not image for %s" % card[CARD_NAME_KEY]
+			print("No image for %s", card[CARD_NAME_KEY])
 
 def downloadCardImage(cardImageUrl, imageDirectory):
 	imageFileName = os.path.basename(cardImageUrl)
 	imagePath = imageDirectory + imageFileName
 	if os.path.exists(imagePath) != True:
-		print "Saving %s ..." % imagePath
+		print("Saving %s ...", imagePath)
 		urllib.urlretrieve(ARKDAMDB_BASE_URL + cardImageUrl, imageDirectory + imageFileName)
 
 def loadDeck():
