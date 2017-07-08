@@ -1,1 +1,5 @@
-C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe  "& C:\'Program Files'\nodejs\node.exe C:\Users\joned\OneDrive\Documents\Xsplit\open_url.js -u %1"
+powershell.exe  "& node.exe bin\open_url.js -u %1"
+
+
+
+

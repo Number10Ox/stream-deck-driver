@@ -197,7 +197,7 @@ function displayCardsInCurrentFolder()
 function executeCardAction(cardId, folderIndex, keyIndex) {
 	var cardImageFileName = path.resolve(__dirname, imageFileNameForCard(cardId, folderIndex, keyIndex));
 	var command =  cardActionCommand + ' ' + cardImageFileName ;
-	console.log('Executing %s', command);
+	console.log('Executing %s...', command);
 	exec(command);
 }
 
