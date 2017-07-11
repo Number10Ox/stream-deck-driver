@@ -1,0 +1,77 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"id": "streamdeck_driver_schema.json",
+	"type": "object",
+	"properties": {
+		"folders": {
+			"id": "/properties/folders",
+			"type": "array",
+			"items": {
+				"id": "/properties/folders/items",
+				"type": "object",
+				"properties": {
+					"folder_contents": {
+						"id": "/properties/folders/items/properties/folder_contents",
+						"type": "array",
+						"items": {
+							"id": "/properties/folders/items/properties/folder_contents/items",
+							"type": "object",
+							"properties": {
+								"command": {
+									"id": "/properties/folders/items/properties/folder_contents/items/properties/command",
+									"type": "string"
+								},
+								"image": {
+									"id": "/properties/folders/items/properties/folder_contents/items/properties/image",
+									"type": "string"
+								},
+								"key_id": {
+									"id": "/properties/folders/items/properties/folder_contents/items/properties/key_id",
+									"type": "integer",
+									"minimum": 0,
+									"maximum": 1
+								},
+								"text": {
+									"id": "/properties/folders/items/properties/folder_contents/items/properties/text",
+									"type": "string"
+								}
+							}
+						}
+					},
+					"main_menu_key_id": {
+						"id": "/properties/folders/items/properties/main_menu_key_id",
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 15
+					}
+				},
+				"required": [
+					"main_menu_key_id"
+				]
+			}
+		},
+		"streamdeck_info": {
+			"id": "/properties/streamdeck_info",
+			"type": "object",
+			"properties": {
+				"main_folder_key_ids": {
+					"id": "/properties/streamdeck_info/properties/main_folder_key_ids",
+					"type": "array",
+					"items": {
+						"id": "/properties/streamdeck_info/properties/main_folder_key_ids/items",
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 1
+					}
+				}
+			},
+			"required": [
+				"main_folder_key_ids"
+			]
+		}
+	},
+	"required": [
+		"streamdeck_info"
+	],
+	"definitions": {}
+}
