@@ -1,12 +1,11 @@
 
 {
 	"streamdeck_info": {
-		"main_folder_key_ids": [5, 6, 7, 8, 9, 12, 13]
+		"main_folder_key_id_list": [5, 6, 7, 8, 9, 12, 13]
 	},
-	"folders" :
-	[
+	"folder_list" : [
 		{
-			"main_menu_key_id" : 12,
+			"main_folder_key_id" : 12,
 			"folder_contents":
 			[
 				{ 
@@ -19,7 +18,7 @@
 			]
 		},
 		{
-			"main_menu_key_id" : 13,
+			"main_folder_key_id" : 13,
 			"folder_contents":
 			[
 				{ 

@@ -29,13 +29,19 @@
 									"id": "/properties/folders/items/properties/folder_contents/items/properties/key_id",
 									"type": "integer",
 									"minimum": 0,
-									"maximum": 1
+									"maximum": 15
 								},
 								"text": {
 									"id": "/properties/folders/items/properties/folder_contents/items/properties/text",
 									"type": "string"
 								}
-							}
+							},
+							"required": [
+								"command",
+								"image",
+								"key_id"
+							],
+							"additionalProperties": false
 						}
 					},
 					"main_menu_key_id": {
@@ -47,31 +53,35 @@
 				},
 				"required": [
 					"main_menu_key_id"
-				]
+				],
+				"additionalProperties": false
 			}
 		},
 		"streamdeck_info": {
 			"id": "/properties/streamdeck_info",
 			"type": "object",
 			"properties": {
-				"main_folder_key_ids": {
-					"id": "/properties/streamdeck_info/properties/main_folder_key_ids",
+				"main_folder_key_id_list": {
+					"id": "/properties/streamdeck_info/properties/main_folder_key_id_list",
 					"type": "array",
 					"items": {
-						"id": "/properties/streamdeck_info/properties/main_folder_key_ids/items",
+						"id": "/properties/streamdeck_info/properties/main_folder_key_id_list/items",
 						"type": "integer",
 						"minimum": 0,
-						"maximum": 1
+						"maximum": 15
 					}
 				}
 			},
 			"required": [
-				"main_folder_key_ids"
-			]
+				"main_folder_key_id_list"
+			],
+			"additionalProperties": false
 		}
 	},
 	"required": [
+		"folders",
 		"streamdeck_info"
 	],
+	"additionalProperties": false,
 	"definitions": {}
 }

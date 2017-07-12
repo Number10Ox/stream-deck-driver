@@ -23,8 +23,6 @@ const reservedFolderButtons = [STREAMDECK_BACK_BUTTON_KEY_INDEX];
 const imageCacheDirectory = 'imagecache';
 const defaultButtonImage = 'icons/cardtemplate.png';
 
-const configurationFileSchema = "streamDeckDriver_configuration_schema.json";
-
 //=============================================================================
 
 // Index of current active folder
@@ -228,7 +226,6 @@ streamDeck.on('error', error => {
     console.error(error);
 });
 
-
 function loadConfiguration(configurationFile) { 
 	if (!fs.existsSync(configurationFile))	{
 		console.log('Error: cannot open configuration file "%s"', configurationFile);
@@ -243,19 +240,73 @@ function loadConfiguration(configurationFile) {
 
 	// Validate against schema
 	var Ajv = require('ajv');
-	var ajv = new Ajv(); 
-	var schema = fs.readFileSync(configurationFileSchema);
-	var validate = ajv.compile(schema);
-	var valid = validate(content);
-	if (!valid) 
+	var ajv = new Ajv({allErrors: true});
+	var schema = 
 	{
-		console.log(validate.errors);
-		return;
+		"properties": {
+		    "streamdeck_info": {
+				"properties": {
+					"main_folder_key_id_list": {
+						"type": "array",
+						"items": {
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 15
+						}
+					}
+				},
+				"required": [
+					"main_folder_key_id_list"
+				],
+		    },
+			"folder_list": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"folder_contents": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"properties": {
+									"command": { "type": "string"},
+									"image": { "type": "string"},
+									"key_id": { "type": "integer", "minimum": 0, "maximum": 15 },
+									"text": { "type": "string" }
+								},
+								"required": [ "command", "image", "key_id"],
+							}
+						},
+						"main_folder_key_id": { "type": "integer", "minimum": 0, "maximum": 15 }
+					},
+					"required": ["main_folder_key_id"],
+				}
+			},		    
+		},
+		"required": ["streamdeck_info", "folder_list"],
+	}
+
+	var validate = ajv.compile(schema);
+ 	var valid = validate(jsonObject);
+  	if (valid) {
+  		console.log('Validated configuration file "%s"', configurationFile);
+  	} else {
+	  	console.log('Invalid: ' + ajv.errorsText(validate.errors));
+	  	return;
 	}
 
 	// List of buttons assigned to folders on StreamDeck
-	folderButtons = jsonObject.streamdeck_info.main_folder_key_ids;
+	folderButtons = jsonObject.streamdeck_info.main_folder_key_id_list;
+	if (!jsonObject.hasOwnProperty('folder_list')) {
+		console.log('Error no folders found');
+		return;
+	}
 
+	var folders = jsonObject['folder_list'];
+	for (var i = 0; i < folders.length; i++) {
+		var folder = folders[i];
+		console.log('Folder: main_folder_key_id: %d', folder.main_folder_key_id);
+	}
 }
 
 //============================ Main =================================
