@@ -1,5 +1,32 @@
 
 {
-    "foo": { "type": "string" },
-    "bar": { "type": "number", "maximum": 3 }
+	"streamdeck_info": {
+		"main_folder_button_id_list": [5, 6, 7, 8, 9, 12, 17]
+	},
+	"folder_list" : [
+		{
+			"main_folder_button_id" : 12,
+			"folder_contents":
+			[
+				{ 
+				  "button_id": 5,
+				  "image": "",
+				  "text": "",
+				  "command": ""
+
+			    }
+			]
+		},
+		{
+			"folder_contents":
+			[
+				{ 
+				  	"button_id": 5,
+				  	"image": "",
+				  	"text": "",
+	  			    "command": ""
+			    }
+			]
+		}
+	]
 }

@@ -4,6 +4,7 @@
   "description": "Tool for loading images into El Gato stream deck",
   "main": "streamdecktool.js",
   "dependencies": {
+    "adt": "^0.7.2",
     "curlrequest": "^1.0.1",
     "elgato-stream-deck": "^1.2.0",
     "gyp": "^0.5.0",

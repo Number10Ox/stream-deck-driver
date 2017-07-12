@@ -1,12 +1,13 @@
 'use strict';
 
 // Packages
+var adt = require('adt');
+const curl = require('curlrequest');
+const { exec } = require('child_process');
+const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp'); 
 const streamDeck = require('elgato-stream-deck');
-const curl = require('curlrequest');
-const fs = require('fs');
-const { exec } = require('child_process');
 
 //=============================== CONFIGURATION ===============================
 
@@ -14,34 +15,90 @@ const { exec } = require('child_process');
 const STREAMDECK_BUTTONS_PER_FOLDER = 15;
 // A 'folder index' is used to identify which folder we are in. We need an
 // id for the top level 'main' folder
-const STREAM_DECK_MAIN_FOLDER_INDEX = STREAMDECK_BUTTONS_PER_FOLDER + 1;
+const STREAM_DECK_MAIN_FOLDER_INDEX = STREAMDECK_BUTTONS_PER_FOLDER;
 // The key index of the "back" button when sub-page is open
 const STREAMDECK_BACK_BUTTON_KEY_INDEX = 4;
-
-const reservedFolderButtons = [STREAMDECK_BACK_BUTTON_KEY_INDEX];
-
-const imageCacheDirectory = 'imagecache';
-const defaultButtonImage = 'icons/cardtemplate.png';
+// File where .pngs are generated with image with overlayed text
+const IMAGE_CACHE_DIRECTORY = 'imagecache';
+// Button image used if no image specified or specified image not found
+const DEFAULT_BUTTON_IMAGE = 'icons/cardtemplate.png';
+// Buttons reserved in folders that shouldn't be overridden, e.g. back button
+const RESERVED_FOLDER_BUTTONS = [STREAMDECK_BACK_BUTTON_KEY_INDEX];
+// JSON schema for configuration file used to configure StreamDeck
+const CONFIGURATION_FILE_SCHEMA = 
+{
+	"properties": {
+	    "streamdeck_info": {
+			"properties": {
+				"main_folder_button_id_list": {
+					"type": "array",
+					"items": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 15
+					}
+				}
+			},
+			"required": [
+				"main_folder_button_id_list"
+			],
+	    },
+		"folder_list": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"folder_contents": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"command": { "type": "string"},
+								"image": { "type": "string"},
+								"button_id": { "type": "integer", "minimum": 0, "maximum": 15 },
+								"text": { "type": "string" }
+							},
+							"required": [ "command", "image", "button_id"],
+						}
+					},
+					"main_folder_button_id": { "type": "integer", "minimum": 0, "maximum": 15 }
+				},
+				"required": ["main_folder_button_id"],
+			}
+		},		    
+	},
+	"required": ["streamdeck_info", "folder_list"],
+}
 
 //=============================================================================
 
-// Index of current active folder
-var currentFolderIndex = STREAM_DECK_MAIN_FOLDER_INDEX;
+// ADT (Algebraic Data Type) to store configuration data for each button
+var ManagedButtonConfig = adt.newtype('ButtonConfig', {
+  	image: adt.only(String),
+  	text: adt.only(String),
+  	command: adt.only(String)
+});
+
+// Variable that tracks index of current active folder (button id on  main page)
+var _currentFolderIndex = STREAM_DECK_MAIN_FOLDER_INDEX;
 
 // Array that will populated with card ids
-var cardList = [];
-
+var _cardList = [];
 
 // List of key for buttons with folders in "main" folder
-var folderButtons = [];
+var _mainPageFolderButtons = [];
 
-// Array of folders 
-//		index : button key index 
-//		cards: list of card ids for folder
-var cardFolders = [];
+// Array of folders that the SteamDeckDriver will be managing
+//		index: button index 
+//		value: array of
+//			index: button iindex
+// 			value: ManagedButtonConfig 
+var _managedFolders = [];
 
 // Queue for processing cache images
-var cacheImageQueue = [];
+var _cacheImageQueue = [];
+
+//=============================================================================
 
 function loadDeck(callback) {
 	var requestUrl = ARKHAMDB_API_DECK_URL + ARKHAMDB_PLAYER_DECK_ID + '.json';
@@ -57,11 +114,11 @@ function loadDeck(callback) {
 	});
 }
 
-function generateCachedIconFileName(folderIndex, keyIndex) {
- 	return imageCacheDirectory + '/' + 'button_' + folderIndex + '_' + keyIndex + '.png';
+function generateCachedIconFileName(folderIndex, buttonIndex) {
+ 	return imageCacheDirectory + '/' + 'button_' + folderIndex + '_' + buttonIndex + '.png';
 }
 
-function imageFileNameForCard(cardId, folderIndex, keyIndex) {
+function imageFileNameForCard(cardId, folderIndex, buttonIndex) {
 	var pngFileName = cardImageDirectory + '/' + cardId + '.png';
 	var jpgFileName = cardImageDirectory + '/' + cardId + '.jpg';
 
@@ -91,7 +148,7 @@ function initializeCardFolders() {
 }
 
 function processNextCacheImageInQueue()
-{
+ {
 	if (cacheImageQueue.length > 0) {
 		var nextImage = cacheImageQueue.shift();
 		cacheKeyImageWithTextOverlay(nextImage.iconImageFileName, nextImage.overlayText, nextImage.outputImageFileName);
@@ -226,6 +283,20 @@ streamDeck.on('error', error => {
     console.error(error);
 });
 
+function configurationFileHasValidFormat(jsonObject)
+{
+	var Ajv = require('ajv');
+	var ajv = new Ajv({allErrors: true});
+	var validate = ajv.compile(CONFIGURATION_FILE_SCHEMA);
+ 	var validFormat = validate(jsonObject);
+
+	if (!validFormat) {
+		console.log('Configuration file invalid format: ' + ajv.errorsText(validate.errors));
+	}
+
+ 	return validFormat;
+}
+
 function loadConfiguration(configurationFile) { 
 	if (!fs.existsSync(configurationFile))	{
 		console.log('Error: cannot open configuration file "%s"', configurationFile);
@@ -238,75 +309,36 @@ function loadConfiguration(configurationFile) {
 	var jsonObject = JSON.parse(content);
 	//console.log(JSON.stringify(jsonObject));
 
-	// Validate against schema
-	var Ajv = require('ajv');
-	var ajv = new Ajv({allErrors: true});
-	var schema = 
-	{
-		"properties": {
-		    "streamdeck_info": {
-				"properties": {
-					"main_folder_key_id_list": {
-						"type": "array",
-						"items": {
-							"type": "integer",
-							"minimum": 0,
-							"maximum": 15
-						}
-					}
-				},
-				"required": [
-					"main_folder_key_id_list"
-				],
-		    },
-			"folder_list": {
-				"type": "array",
-				"items": {
-					"type": "object",
-					"properties": {
-						"folder_contents": {
-							"type": "array",
-							"items": {
-								"type": "object",
-								"properties": {
-									"command": { "type": "string"},
-									"image": { "type": "string"},
-									"key_id": { "type": "integer", "minimum": 0, "maximum": 15 },
-									"text": { "type": "string" }
-								},
-								"required": [ "command", "image", "key_id"],
-							}
-						},
-						"main_folder_key_id": { "type": "integer", "minimum": 0, "maximum": 15 }
-					},
-					"required": ["main_folder_key_id"],
-				}
-			},		    
-		},
-		"required": ["streamdeck_info", "folder_list"],
-	}
-
-	var validate = ajv.compile(schema);
- 	var valid = validate(jsonObject);
-  	if (valid) {
-  		console.log('Validated configuration file "%s"', configurationFile);
-  	} else {
-	  	console.log('Invalid: ' + ajv.errorsText(validate.errors));
+	// Validate format
+	var validFormat = configurationFileHasValidFormat(jsonObject);
+  	if (!validFormat) {
 	  	return;
 	}
 
-	// List of buttons assigned to folders on StreamDeck
-	folderButtons = jsonObject.streamdeck_info.main_folder_key_id_list;
+	// List of buttons assigned to folders on StreamDeck - this is used to track
+	// which folder is currently active on StreamDeck. Currently, 
+	_mainPageFolderButtons = jsonObject.streamdeck_info.main_folder_button_id_list;
 	if (!jsonObject.hasOwnProperty('folder_list')) {
 		console.log('Error no folders found');
 		return;
 	}
 
+	// Populate _managedFolders with configuration info
 	var folders = jsonObject['folder_list'];
-	for (var i = 0; i < folders.length; i++) {
-		var folder = folders[i];
-		console.log('Folder: main_folder_key_id: %d', folder.main_folder_key_id);
+	for (var folderIndex = 0; folderIndex < folders.length; folderIndex++) {
+		var folder = folders[folderIndex];
+		console.log('Adding buttons for main page button_id: %d...', folder.main_folder_button_id);
+
+		_managedFolders[folder.main_folder_button_id] = [];
+
+		for (var buttonIndex  = 0; buttonIndex < folder.folder_contents.length; buttonIndex++) {
+			var buttonInfo = folder.folder_contents[buttonIndex];
+			console.log('Adding button %d to folder %d', buttonInfo.button_id, folderIndex);
+			_managedFolders[folder.main_folder_button_id][buttonInfo.button_id] = ManagedButtonConfig(buttonInfo.image, buttonInfo.text, buttonInfo.command);
+		}
 	}
+
+	console.log(_managedFolders);
 }
 
 //============================ Main =================================
