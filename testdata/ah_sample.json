@@ -10,7 +10,7 @@
 			[
 				{ 
 				  "button_id": 5,
-				  "image": "images/01013.jpg",
+				  "image": "arkham/images/01013.jpg",
 				  "text": "1013",
 				  "command": "bin\\open_url_cmd.bat images\\01013.jpg" 
 			    }
@@ -22,7 +22,7 @@
 			[
 				{ 
 				  	"button_id": 5,
-				  	"image": "images/01058.jpg",
+				  	"image": "arkham/images/01058.jpg",
 				  	"text": "1058",
 					"command": "bin\\open_url_cmd.bat images\\01058.jpg" 
 			    }

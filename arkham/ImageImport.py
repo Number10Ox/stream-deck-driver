@@ -12,7 +12,8 @@ from pprint import pprint
 # Some cards have no image, e.g., higher xp cards
 
 ARKDAMDB_BASE_URL = 'https://arkhamdb.com/'
-ARKHAMDB_API_CARDS_URL = 'https://arkhamdb.com/api/public/cards/'
+ARKHAMDB_API_INVESTIGATOR_CARDS_URL = 'https://arkhamdb.com/api/public/cards/'
+ARKHAMDB_API_PACK_CARDS_URL = 'https://arkhamdb.com/api/public/cards/'
 ARKHAMDB_API_DECK_URL = 'https://arkhamdb.com/api/public/decklist/'
 
 CARD_NAME_KEY = 'name'
@@ -25,22 +26,27 @@ IMAGE_CACHE_DIR = 'images/'
 def printCardList(cardList):
 	for card in cardList:
 		if CARD_NAME_KEY in card and CARD_IMAGE_KEY in card:
-			print("Card name: %s, imagesrc: %s", card[CARD_NAME_KEY], card[CARD_IMAGE_KEY])
+			print "Card name: %s, imagesrc: %s", card[CARD_NAME_KEY], card[CARD_IMAGE_KEY]
 			#pprint(card)
 		elif CARD_NAME_KEY in card and CARD_BACKIMAGE_KEY in card:
-			print("Card name: %s, imagesrc: %s", card[CARD_NAME_KEY], card[CARD_BACKIMAGE_KEY])
+			print "Card name: %s, imagesrc: %s", card[CARD_NAME_KEY], card[CARD_BACKIMAGE_KEY]
 			#pprint(card)
 		else:
 			print("------- card without image -------")
 			if CARD_NAME_KEY in card:
-				print("Card name: %s", card[CARD_NAME_KEY])
+				print "Card name: %s", card[CARD_NAME_KEY]
 			if CARD_IMAGE_KEY in card:
-				print("Card image: %s", card[CARD_IMAGE_KEY])
+				print "Card image: %s", card[CARD_IMAGE_KEY]
 			pprint(card)
 
-def loadCardList():
-	# Loads list of cards
-	r = requests.get(ARKHAMDB_API_CARDS_URL)
+def loadAllInvestigatorCardsList():
+	r = requests.get(ARKHAMDB_API_INVESTIGATOR_CARDS_URL)
+	data = json.loads(r.text)
+	return data
+
+def loadCardsForPack(packCode):
+	packUrl = ARKHAMDB_API_INVESTIGATOR_CARDS_URL + packCode
+	r = requests.get(packUrl)
 	data = json.loads(r.text)
 	return data
 
@@ -67,13 +73,19 @@ def loadDeck():
 	return data
 
 def main():
-	cardList = loadCardList()
-	printCardList(cardList)
+	#allInvestigatorCardsList = loadAllInvestigatorCardsList()
+	#printCardList(allInvestigatorCardsList)
+
+	packs = ["Core", "dwl", "tmm", "tece", "bota", "uau", "wda", "litas", "cotr", "coh"]	
+
+	for packCode in packs:
+		packCardsList = loadCardsForPack(packCode)
+		printCardList(packCardsList)
 
 	#deck = loadDeck()
 	#pprint(deck)
 
-	downloadCardImages(cardList, IMAGE_CACHE_DIR)
+	#downloadCardImages(cardList, IMAGE_CACHE_DIR)
 	#downloadCardImage('/bundles/cards/01001b.png', IMAGE_CACHE_DIR)
 
 #-----------------------------------------------------------------------------
