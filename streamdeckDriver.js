@@ -82,9 +82,6 @@ var ManagedButtonConfig = adt.newtype('ButtonConfig', {
 // Variable that tracks index of current active folder (button id on  main page)
 var _currentFolderIndex = STREAM_DECK_MAIN_FOLDER_INDEX;
 
-// Array that will populated with card ids
-var _cardList = [];
-
 // List of key for buttons with folders in "main" folder
 var _mainPageFolderButtons = [];
 
@@ -100,22 +97,8 @@ var _cacheImageQueue = [];
 
 //=============================================================================
 
-function loadDeck(callback) {
-	var requestUrl = ARKHAMDB_API_DECK_URL + ARKHAMDB_PLAYER_DECK_ID + '.json';
-	var options = {
-		url: requestUrl, 
-		verbose: true,
-		stderr: true
-	};
-
-	curl.request(options, function (err, data) {
-		var json = JSON.parse(data.toString());
-		callback(json)
-	});
-}
-
 function generateCachedIconFileName(folderIndex, buttonIndex) {
- 	return imageCacheDirectory + '/' + 'button_' + folderIndex + '_' + buttonIndex + '.png';
+ 	return IMAGE_CACHE_DIRECTORY + '/' + 'button_' + folderIndex + '_' + buttonIndex + '.png';
 }
 
 function imageFileNameForCard(cardId, folderIndex, buttonIndex) {
@@ -134,23 +117,10 @@ function imageFileNameForCard(cardId, folderIndex, buttonIndex) {
 	return genericCardButtonIconFileName;
 }
 
-function initializeCardFolders() {
-	for (var i = 0; i < cardFolderButtons.length; i++) {
-		cardFolders[cardFolderButtons[i]] = [];
-
-		for (var j = 0; j < STREAMDECK_BUTTONS_PER_FOLDER; j++) {
-			if (reservedFolderButtons.indexOf(j) == -1) {
-				cardFolders[cardFolderButtons[i]][j] = ARKHAMDB_EMPTY_CARD_ID;
-			}
-		}
-	}
-	// console.log(cardFolders);
-}
-
 function processNextCacheImageInQueue()
  {
-	if (cacheImageQueue.length > 0) {
-		var nextImage = cacheImageQueue.shift();
+	if (_cacheImageQueue.length > 0) {
+		var nextImage = _cacheImageQueue.shift();
 		cacheKeyImageWithTextOverlay(nextImage.iconImageFileName, nextImage.overlayText, nextImage.outputImageFileName);
 	}
 }
@@ -179,48 +149,15 @@ function cacheKeyImageWithTextOverlay(iconImageFileName, overlayText, outputImag
 	console.log("wrote: %s using %s", outputImageFileName, iconImageFileName);
 }
 
-function populateFoldersWithCards(cardList) {
-
-	initializeCardFolders();
-
-	var cardsToAdd = cardList.slice()
-	//console.log(cardsToAdd);
-
-	cacheImageQueue = [];
-
- 	for (var folderIndex = 0; folderIndex < cardFolders.length && cardsToAdd.length > 0; folderIndex++) {
- 		for (var keyIndex in cardFolders[folderIndex]) {
- 			if (cardsToAdd.length == 0) {
- 				break;
- 			}
-
- 			var cardId = cardsToAdd.shift();
-			cardFolders[folderIndex][keyIndex] = cardId;
-
-			// TODO Add a flag to generate images optionally
- 			var cachedKeyIconFileName = generateCachedIconFileName(folderIndex, keyIndex);
-			var keyImageFileName = imageFileNameForCard(cardId, folderIndex, keyIndex);
-
-			var queueElement = Object.freeze({ iconImageFileName:keyImageFileName, overlayText:cardId, outputImageFileName:cachedKeyIconFileName});
-			cacheImageQueue.push(queueElement);
- 		}
-	}
-
-	processNextCacheImageInQueue();
-
-	//console.log(cardFolders);
-}
-
 // Set a SteamDeck button image
-function setKeyImage(keyIndex, keyImageFileName) {
-	//console.log("SETKEYIMAGE CARD: keyIndex = %d cachedIconImage=%s", keyIndex, keyImageFileName);
-	var outputImage = sharp(path.resolve(__dirname, keyImageFileName));
+function setKeyImage(buttonIndex, buttonImageFileName) {
+	var outputImage = sharp(path.resolve(__dirname, buttonImageFileName));
 	outputImage.resize(streamDeck.ICON_SIZE); // Scale down to the right size, cropping if necessary.
 	outputImage.flatten(); // Eliminate alpha channel, if any.
 	outputImage.raw(); // Give us uncompressed RGB
 	outputImage.toBuffer()
    			   .then(buffer => {
-	   			   	streamDeck.fillImage(parseInt(keyIndex, 10), buffer);
+	   			   	streamDeck.fillImage(parseInt(buttonIndex, 10), buffer);
 				})
 			   .catch(err => {
 					console.log('----- Error ----');
@@ -228,21 +165,18 @@ function setKeyImage(keyIndex, keyImageFileName) {
 				});
 }
 
-function displayCardsInCurrentFolder()
+function displayButtonImagesInCurrentFolder()
 {
-	for (var keyIndex in cardFolders[currentFolderIndex]) {
-		if (typeof cardFolders[currentFolderIndex][keyIndex] !== 'undefined' && cardFolders[currentFolderIndex][keyIndex] !== null && cardFolders[currentFolderIndex][keyIndex] !== 0) {
-			var cardId = cardFolders[currentFolderIndex][keyIndex];
-			var cachedKeyIconFileName = generateCachedIconFileName(currentFolderIndex, keyIndex);
-			console.log("DISPLAYING CARD: folderId = %d keyIndex = %d cardId = %d cachedIconImage=%s", currentFolderIndex, keyIndex, cardId, cachedKeyIconFileName);
-			setKeyImage(keyIndex, cachedKeyIconFileName);
-		}
+	for (var mainPageButtonIndex in _managedFolders) {
+		for (var buttonIndex in _managedFolders[mainPageButtonIndex]) {
+			var cachedButtonIconFileName = generateCachedIconFileName(_currentFolderIndex, buttonIndex);
+			console.log("DISPLAYING BUTTON: mainPageButtonIndex = %d buttonIndex = %d cachedIconImage=%s", mainPageButtonIndex, buttonIndex, cachedButtonIconFileName);
+			setKeyImage(buttonIndex, cachedButtonIconFileName);
+		}	
 	}
 }
 
-function executeCardAction(cardId, folderIndex, keyIndex) {
-	var cardImageFileName = path.resolve(__dirname, imageFileNameForCard(cardId, folderIndex, keyIndex));
-	var command =  cardActionCommand + ' ' + cardImageFileName ;
+function executeButtonCommand(command) {
 	console.log('Executing %s...', command);
 	exec(command);
 }
@@ -250,29 +184,34 @@ function executeCardAction(cardId, folderIndex, keyIndex) {
 /* 
  * Handling key presses
  */
-streamDeck.on('up', selectedKeyIndex => {
-	if (currentFolderIndex == STREAM_DECK_MAIN_FOLDER_INDEX) {
+streamDeck.on('up', selectedButtonIndex => {
+
+	if (_currentFolderIndex == STREAM_DECK_MAIN_FOLDER_INDEX) {
 		// If button for sub-folder in main folder was opened then populate it with buttons
 		// for the cards. Need to do it on a delay after StreamDeck software has finished
 		// opening the folder.
 
-		// console.log('selectedKeyIndex: %d', selectedKeyIndex);
+		//console.log('selectedKeyIndex: %d', selectedKeyIndex);
 		//console.log(cardFolders[selectedKeyIndex]);
 
-		if (typeof cardFolders[selectedKeyIndex] !== 'undefined' && cardFolders[selectedKeyIndex] !== null) {
-			currentFolderIndex = selectedKeyIndex;
-			setTimeout(displayCardsInCurrentFolder, 500);
+		if (_mainPageFolderButtons.indexOf(selectedButtonIndex) >= 0) {
+			// In folder
+			_currentFolderIndex = selectedButtonIndex;
+
+			// Check if in managed folder
+			if (typeof _managedFolders[selectedButtonIndex] !== 'undefined' && _managedFolders[selectedButtonIndex] !== null) {
+				setTimeout(displayButtonImagesInCurrentFolder, 500);
+			}
 		}
 	}
-	else if (selectedKeyIndex == STREAMDECK_BACK_BUTTON_KEY_INDEX) {
+	else if (selectedButtonIndex == STREAMDECK_BACK_BUTTON_KEY_INDEX) {
 		// Return to main folder
-		currentFolderIndex = STREAM_DECK_MAIN_FOLDER_INDEX;
+		_currentFolderIndex = STREAM_DECK_MAIN_FOLDER_INDEX;
 	} else {
-		if (typeof cardFolders[currentFolderIndex][selectedKeyIndex] !== 'undefined'
-			&& cardFolders[currentFolderIndex][selectedKeyIndex] !== null
-		    && cardFolders[currentFolderIndex][selectedKeyIndex] !== 0) {
-				var cardId =  cardFolders[currentFolderIndex][selectedKeyIndex];
-				executeCardAction(cardId, currentFolderIndex, selectedKeyIndex);
+		if (typeof _managedFolders[_currentFolderIndex][selectedButtonIndex] !== 'undefined'
+			&& _managedFolders[_currentFolderIndex][selectedButtonIndex] !== null) {
+				var buttonConfig = _managedFolders[_currentFolderIndex][selectedButtonIndex];
+				executeButtonCommand(buttonConfig.command);
 		}
 	}
 
@@ -327,18 +266,46 @@ function loadConfiguration(configurationFile) {
 	var folders = jsonObject['folder_list'];
 	for (var folderIndex = 0; folderIndex < folders.length; folderIndex++) {
 		var folder = folders[folderIndex];
-		console.log('Adding buttons for main page button_id: %d...', folder.main_folder_button_id);
+		//console.log('Adding buttons for main page button_id: %d...', folder.main_folder_button_id);
 
 		_managedFolders[folder.main_folder_button_id] = [];
 
 		for (var buttonIndex  = 0; buttonIndex < folder.folder_contents.length; buttonIndex++) {
 			var buttonInfo = folder.folder_contents[buttonIndex];
-			console.log('Adding button %d to folder %d', buttonInfo.button_id, folderIndex);
+			//console.log('Adding button %d to folder %d', buttonInfo.button_id, folderIndex);
 			_managedFolders[folder.main_folder_button_id][buttonInfo.button_id] = ManagedButtonConfig(buttonInfo.image, buttonInfo.text, buttonInfo.command);
 		}
 	}
 
-	console.log(_managedFolders);
+	//console.log(_managedFolders);
+}
+
+function generateButtonImages()
+{
+	// TODO Need to process images serially because text drawing seems to not be thread-safe
+	// Is there a better way to do this?
+	_cacheImageQueue = [];
+
+	for (var folderIndex in _managedFolders) {
+		for (var buttonIndex in _managedFolders[folderIndex]) {
+
+		 	var cachedButtonIconFileName = generateCachedIconFileName(folderIndex, buttonIndex);
+			var image = _managedFolders[folderIndex][buttonIndex].image;
+			var text = _managedFolders[folderIndex][buttonIndex].text;
+			// console.log('generate %s %s %s', image, text, cachedButtonIconFileName);
+
+			var queueElement = Object.freeze({ iconImageFileName:image, overlayText:text, outputImageFileName:cachedButtonIconFileName});
+			_cacheImageQueue.push(queueElement);
+		}
+	}
+
+	processNextCacheImageInQueue();
+}
+
+function configureDriver(configurationFile)
+{
+	loadConfiguration(configurationFile);
+	generateButtonImages();
 }
 
 //============================ Main =================================
@@ -348,23 +315,5 @@ var argv = require('yargs')
 	.demandOption(['f'])
 	.argv;
 
-loadConfiguration(argv.f);
+configureDriver(argv.f);
 
-/*
-// Load the cards in the current deck into the deck list
-loadDeck(function(json)	{
-	if (json.hasOwnProperty('slots')) {
-		var slots = json['slots'];
-		for (var card in slots)
-		{
-			cardList.push(card);
-		}
-	}
-
-	cardList.sort(function (card1, card2) {
-		return card1 - card2;
-	});
-
-	populateFoldersWithCards(cardList);
-});
-*/
