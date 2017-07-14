@@ -1,9 +1,9 @@
+import argparse
 import json
 import os
+from pprint import pprint
 import requests
 import urllib
-
-from pprint import pprint
 
 
 # REST command to get data for all cards:
@@ -26,11 +26,11 @@ IMAGE_CACHE_DIR = 'images/'
 def printCardList(cardList):
 	for card in cardList:
 		if CARD_NAME_KEY in card and CARD_IMAGE_KEY in card:
-			print "Card name: %s, imagesrc: %s", card[CARD_NAME_KEY], card[CARD_IMAGE_KEY]
-			#pprint(card)
+			#print "Card name: %s, imagesrc: %s" % (card[CARD_NAME_KEY], card[CARD_IMAGE_KEY])
+			pprint(card)
 		elif CARD_NAME_KEY in card and CARD_BACKIMAGE_KEY in card:
-			print "Card name: %s, imagesrc: %s", card[CARD_NAME_KEY], card[CARD_BACKIMAGE_KEY]
-			#pprint(card)
+			#print "Card name: %s, imagesrc: %s" % (card[CARD_NAME_KEY], card[CARD_BACKIMAGE_KEY])
+			pprint(card)
 		else:
 			print("------- card without image -------")
 			if CARD_NAME_KEY in card:
@@ -73,6 +73,20 @@ def loadDeck():
 	return data
 
 def main():
+
+	parser = argparse.ArgumentParser(fromfile_prefix_chars='@', description='ArkhamDB data import tool.')
+	# ex: ImageImport --deck 1761
+	parser.add_argument('-d', '--deck', metavar='DECK', help='Loads cards for a specified deck number')
+	# ex: ImageImport --cards 01002 01003 01004
+	parser.add_argument('-c', '--cards', metavar='CARDS', nargs='+', help='Loads cards for the specified list of card ids')
+	# ex: ImageImport --packs Core dwl tmm tece
+	parser.add_argument('-p', '--packs', metavar='PACKS', nargs='+', help='Loads cards from a list of pack ids')
+	# ex: --folders 12 13 
+	parser.add_argument('-f', '--folders', metavar='BUTTONS', type=int, nargs='+', required=True, help='StreamDeck folder buttons to populate')
+	# ex: --other_folders 5 6 7 8 9
+	parser.add_argument('-o', '--other_folders', metavar='BUTTONS', type=int, nargs='+', required=True,  help='Other StreamDeck folder buttons')
+	args = parser.parse_args()
+
 	#allInvestigatorCardsList = loadAllInvestigatorCardsList()
 	#printCardList(allInvestigatorCardsList)
 
