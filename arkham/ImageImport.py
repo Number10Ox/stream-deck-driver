@@ -14,14 +14,21 @@ import urllib
 ARKDAMDB_BASE_URL = 'https://arkhamdb.com/'
 ARKHAMDB_API_INVESTIGATOR_CARDS_URL = 'https://arkhamdb.com/api/public/cards/'
 ARKHAMDB_API_PACK_CARDS_URL = 'https://arkhamdb.com/api/public/cards/'
+ARKHAMDB_API_CARD_URL = 'https://arkhamdb.com/api/public/card/'
 ARKHAMDB_API_DECK_URL = 'https://arkhamdb.com/api/public/decklist/'
 
+CARD_ID_KEY = 'code'
 CARD_NAME_KEY = 'name'
 CARD_IMAGE_KEY = 'imagesrc'
 CARD_BACKIMAGE_KEY = 'backimagesrc'
-CURRENT_GAME_DECK_ID = '1761'
 
+
+# TODONOW
+IMAGES_DIR = 'arkham/images/'
 IMAGE_CACHE_DIR = 'images/'
+
+STREAMDECK_BUTTONS_PER_FOLDER = 15;
+STREAMDECK_BACK_BUTTON_KEY_INDEX = 4;
 
 def printCardList(cardList):
 	for card in cardList:
@@ -39,14 +46,26 @@ def printCardList(cardList):
 				print "Card image: %s", card[CARD_IMAGE_KEY]
 			pprint(card)
 
-def loadAllInvestigatorCardsList():
-	r = requests.get(ARKHAMDB_API_INVESTIGATOR_CARDS_URL)
+def loadCard(cardId):
+	cardUrl = ARKHAMDB_API_CARD_URL + cardId
+	print "Loading card: " + cardUrl
+	r = requests.get(cardUrl)
 	data = json.loads(r.text)
 	return data
 
 def loadCardsForPack(packCode):
 	packUrl = ARKHAMDB_API_INVESTIGATOR_CARDS_URL + packCode
 	r = requests.get(packUrl)
+	data = json.loads(r.text)
+	return data
+
+def loadDeck(deckId):
+	r = requests.get(ARKHAMDB_API_DECK_URL + deckId + ".json")
+	data = json.loads(r.text)
+	return data
+
+def loadAllInvestigatorCardsList():
+	r = requests.get(ARKHAMDB_API_INVESTIGATOR_CARDS_URL)
 	data = json.loads(r.text)
 	return data
 
@@ -67,10 +86,73 @@ def downloadCardImage(cardImageUrl, imageDirectory):
 		print("Saving %s ...", imagePath)
 		urllib.urlretrieve(ARKDAMDB_BASE_URL + cardImageUrl, imageDirectory + imageFileName)
 
-def loadDeck():
-	r = requests.get(ARKHAMDB_API_DECK_URL + CURRENT_GAME_DECK_ID + ".json")
-	data = json.loads(r.text)
-	return data
+
+def generateConfiguration(cardList, folders, otherFolders):
+
+	# Build Streamdeck configuration to convert to Json
+	configuration = {}
+
+	# StreamDeck information
+	configuration['streamdeck_info'] = {}
+	allFolders = folders + otherFolders
+	configuration['streamdeck_info']['main_folder_button_id_list'] = folders + otherFolders
+
+	# Populate list of foders
+	configuration['folder_list'] = []
+
+	# Go through list of configurable folders and configure buttons from card list
+	cardQueue = cardList
+	# Populate folders with cards
+	for folderId in folders:
+
+		folder = {}
+		folder['main_folder_button_id'] = folderId
+		folder['folder_contents'] = []
+
+		for index in [x for x in range(0, STREAMDECK_BUTTONS_PER_FOLDER) if x != STREAMDECK_BACK_BUTTON_KEY_INDEX]:
+			if not cardQueue:
+				break
+
+			card = cardQueue.pop()
+
+			cardId = None
+			if CARD_ID_KEY in card:
+				cardId = card[CARD_ID_KEY]
+			else:
+				print "NO CODE: skipping card..."
+				continue
+
+			image = None
+			if CARD_IMAGE_KEY in card:
+				image = card[CARD_IMAGE_KEY]
+			elif CARD_BACKIMAGE_KEY in card:
+				image = card[CARD_BACKIMAGE_KEY]
+			else:
+				if CARD_NAME_KEY in card:
+					print "NO IMAGE: skipping card %s" % (card[CARD_NAME_KEY])
+				else:
+					print "NO IMAGE: skipping card %s" % (card[CARD_ID_KEY])
+				continue
+
+			imageFilePath = IMAGES_DIR + os.path.basename(image)
+
+			folderContents = {}
+			folderContents['button_id'] = index
+			folderContents['image'] = imageFilePath
+			folderContents['text'] = str(cardId)
+			folderContents['command'] = "bin\\open_url_cmd.bat " + os.path.normcase(imageFilePath)
+
+			folder['folder_contents'].append(folderContents)
+
+			# "command": "bin\\open_url_cmd.bat images\\01013.jpg" 
+
+		if folder['folder_contents']:	
+			configuration['folder_list'].append(folder)
+
+	#print configuration
+
+	return configuration
+
 
 def main():
 
@@ -84,22 +166,50 @@ def main():
 	# ex: --folders 12 13 
 	parser.add_argument('-f', '--folders', metavar='BUTTONS', type=int, nargs='+', required=True, help='StreamDeck folder buttons to populate')
 	# ex: --other_folders 5 6 7 8 9
-	parser.add_argument('-o', '--other_folders', metavar='BUTTONS', type=int, nargs='+', required=True,  help='Other StreamDeck folder buttons')
+	parser.add_argument('-o', '--other-folders', metavar='BUTTONS', type=int, nargs='+', required=True,  help='Other StreamDeck folder buttons')
 	args = parser.parse_args()
+
+	# Need a list of all of the cards we want to assign to buttons
+	cardList = []
+
+	# Add cards from deck, if specified
+	if args.deck:
+		deck = loadDeck(args.deck)
+		for slot in deck["slots"]:
+			card = loadCard(slot)
+			cardList.append(card)
+
+	# Add individual cards, if specified
+	if args.cards:
+		for cardId in args.cards:
+			card = loadCard(cardId) 
+			cardList.append(card)
+			#pprint(cardJson)
+
+	# Add cards from packs, if specified
+	if args.packs:
+		for packId in args.packs:
+			pack = loadCardsForPack(packId) 
+			cardList = cardList + pack
+
+	# pprint(cardList)
+
+	configuration = generateConfiguration(cardList, args.folders, args.other_folders)
+	#TODO file output parameter
+	f = open("import_test_output.json", 'w')
+	f.write(json.dumps(configuration))
+
+	downloadCardImages(cardList, IMAGE_CACHE_DIR)
 
 	#allInvestigatorCardsList = loadAllInvestigatorCardsList()
 	#printCardList(allInvestigatorCardsList)
 
-	packs = ["Core", "dwl", "tmm", "tece", "bota", "uau", "wda", "litas", "cotr", "coh"]	
+	# packs = ["Core", "dwl", "tmm", "tece", "bota", "uau", "wda", "litas", "cotr", "coh"]	
 
-	for packCode in packs:
-		packCardsList = loadCardsForPack(packCode)
-		printCardList(packCardsList)
+	#for packCode in packs:
+	#	packCardsList = loadCardsForPack(packCode)
+	#	printCardList(packCardsList)
 
-	#deck = loadDeck()
-	#pprint(deck)
-
-	#downloadCardImages(cardList, IMAGE_CACHE_DIR)
 	#downloadCardImage('/bundles/cards/01001b.png', IMAGE_CACHE_DIR)
 
 #-----------------------------------------------------------------------------
