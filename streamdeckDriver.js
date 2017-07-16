@@ -103,7 +103,7 @@ var _mainPageFolderButtons = [];
 // Array of folders that the SteamDeckDriver will be managing
 //		index: button index 
 //		value: array of
-//			index: button iindex
+//			index: button index
 // 			value: ManagedButtonConfig 
 var _managedFolders = [];
 
@@ -182,13 +182,11 @@ function setKeyImage(buttonIndex, buttonImageFileName) {
 
 function displayButtonImagesInCurrentFolder()
 {
-	for (var mainPageButtonIndex in _managedFolders) {
-		for (var buttonIndex in _managedFolders[mainPageButtonIndex]) {
-			var cachedButtonIconFileName = generateCachedIconFileName(_currentFolderIndex, buttonIndex);
-			console.log("DISPLAYING BUTTON: mainPageButtonIndex = %d buttonIndex = %d cachedIconImage=%s", mainPageButtonIndex, buttonIndex, cachedButtonIconFileName);
-			setKeyImage(buttonIndex, cachedButtonIconFileName);
-		}	
-	}
+	for (var buttonIndex in _managedFolders[_currentFolderIndex]) {
+		var cachedButtonIconFileName = generateCachedIconFileName(_currentFolderIndex, buttonIndex);
+		//console.log("DISPLAYING BUTTON: mainPageButtonIndex = %d buttonIndex = %d cachedIconImage=%s", _currentFolderIndex, buttonIndex, cachedButtonIconFileName);
+		setKeyImage(buttonIndex, cachedButtonIconFileName);
+	}	
 }
 
 function executeButtonCommand(command) {
