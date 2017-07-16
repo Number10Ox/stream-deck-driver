@@ -9,3 +9,5 @@
 9
 --deck
 1761
+-s
+..\configs\testConfig.json

@@ -9,3 +9,5 @@
 9
 --pack
 Core
+-s
+..\configs\testConfig.json

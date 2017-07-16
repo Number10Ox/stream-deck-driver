@@ -208,7 +208,9 @@ streamDeck.on('up', selectedButtonIndex => {
 		// Return to main folder
 		_currentFolderIndex = STREAM_DECK_MAIN_FOLDER_INDEX;
 	} else {
-		if (typeof _managedFolders[_currentFolderIndex][selectedButtonIndex] !== 'undefined'
+		if (typeof _managedFolders[_currentFolderIndex] !== 'undefined'
+			&& _managedFolders[_currentFolderIndex] !== null
+			&& typeof _managedFolders[_currentFolderIndex][selectedButtonIndex] !== 'undefined'
 			&& _managedFolders[_currentFolderIndex][selectedButtonIndex] !== null) {
 				var buttonConfig = _managedFolders[_currentFolderIndex][selectedButtonIndex];
 				executeButtonCommand(buttonConfig.command);

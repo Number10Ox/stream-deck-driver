@@ -11,3 +11,5 @@
 01030
 01031
 01032
+-s
+..\configs\testConfig.json

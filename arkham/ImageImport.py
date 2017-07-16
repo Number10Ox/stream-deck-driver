@@ -22,7 +22,6 @@ CARD_NAME_KEY = 'name'
 CARD_IMAGE_KEY = 'imagesrc'
 CARD_BACKIMAGE_KEY = 'backimagesrc'
 
-
 # TODONOW
 IMAGES_DIR = 'arkham/images/'
 IMAGE_CACHE_DIR = 'images/'
@@ -153,7 +152,6 @@ def generateConfiguration(cardList, folders, otherFolders):
 
 	return configuration
 
-
 def main():
 
 	parser = argparse.ArgumentParser(fromfile_prefix_chars='@', description='ArkhamDB data import tool.')
@@ -166,7 +164,9 @@ def main():
 	# ex: --folders 12 13 
 	parser.add_argument('-f', '--folders', metavar='BUTTONS', type=int, nargs='+', required=True, help='StreamDeck folder buttons to populate')
 	# ex: --other_folders 5 6 7 8 9
-	parser.add_argument('-o', '--other-folders', metavar='BUTTONS', type=int, nargs='+', required=True,  help='Other StreamDeck folder buttons')
+	parser.add_argument('-o', '--other-folders', metavar='BUTTONS', type=int, nargs='+', required=True,  help='Other StreamDeck folder')
+	# ex: -c test_config.json
+	parser.add_argument('-s', '--streamdeck-file', metavar='FILE', required=True,  help='StreamDeck driver configuration output file')
 	args = parser.parse_args()
 
 	# Need a list of all of the cards we want to assign to buttons
@@ -195,8 +195,7 @@ def main():
 	# pprint(cardList)
 
 	configuration = generateConfiguration(cardList, args.folders, args.other_folders)
-	#TODO file output parameter
-	f = open("import_test_output.json", 'w')
+	f = open(args.streamdeck_file, 'w')
 	f.write(json.dumps(configuration))
 
 	downloadCardImages(cardList, IMAGE_CACHE_DIR)
