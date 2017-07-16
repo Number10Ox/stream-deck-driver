@@ -5,7 +5,6 @@ from pprint import pprint
 import requests
 import urllib
 
-
 # REST command to get data for all cards:
 # curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET https://arkhamdb.com/api/public/cards/
 #
@@ -152,6 +151,10 @@ def generateConfiguration(cardList, folders, otherFolders):
 
 	return configuration
 
+def extractCardId(json):
+	print json['code'];
+	return json['code']
+
 def main():
 
 	parser = argparse.ArgumentParser(fromfile_prefix_chars='@', description='ArkhamDB data import tool.')
@@ -192,7 +195,17 @@ def main():
 			pack = loadCardsForPack(packId) 
 			cardList = cardList + pack
 
-	# pprint(cardList)
+	# Sort list by id
+	cardList.sort(key=extractCardId, reverse=True)
+
+	for card in cardList:
+		print "card code:" + card['code']
+
+	cardCount = len(cardList)
+	print "NUMBER OF CARDS: " + str(cardCount)
+	maxCardCapacity = len(args.folders) * (STREAMDECK_BUTTONS_PER_FOLDER - 1)
+	if cardCount > maxCardCapacity:
+		print "*** FOLDER CAPACITY EXCEEDED*** (%s / %s)" % (cardCount, maxCardCapacity)
 
 	configuration = generateConfiguration(cardList, args.folders, args.other_folders)
 	f = open(args.streamdeck_file, 'w')

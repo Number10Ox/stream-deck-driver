@@ -1,5 +1,20 @@
 'use strict';
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// Tool for programmatically-driven StreamDeck buttons within StreamDeck
+// folders. Takes a config file that can specify
+//
+//			- Button image
+//			- Overlayed button text
+//			- DOS command to be executed when button pressed
+//
+// Note that the tool needs to track what folder the StreamDeck currently ahs
+// open. As there is no way to query StreamDeck, tool needs to know all of
+// the StreamDeck folder buttons.
+//
+///////////////////////////////////////////////////////////////////////////////
+
 // Packages
 var adt = require('adt');
 const curl = require('curlrequest');
