@@ -23,4 +23,4 @@
 01120
 01123
 -s
-..\configs\testConfig.json
+..\..\configs\testConfig.json

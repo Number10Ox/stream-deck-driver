@@ -21,8 +21,8 @@ CARD_NAME_KEY = 'name'
 CARD_IMAGE_KEY = 'imagesrc'
 CARD_BACKIMAGE_KEY = 'backimagesrc'
 
-# TODONOW
-IMAGES_DIR = 'arkham/images/'
+# TODO PASS AS ARGUMENT?
+IMAGES_DIR = 'games/arkham/images/'
 IMAGE_CACHE_DIR = 'images/'
 
 STREAMDECK_BUTTONS_PER_FOLDER = 15;

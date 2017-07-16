@@ -7,11 +7,9 @@
 7
 8
 9
---pack
-dwl
 --cards
 01030
 01031
 01032
 -s
-..\configs\testConfig.json
+..\..\configs\testConfig.json

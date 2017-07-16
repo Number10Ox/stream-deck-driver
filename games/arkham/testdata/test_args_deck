@@ -7,7 +7,7 @@
 7
 8
 9
---pack
-Core
+--deck
+1761
 -s
-..\configs\testConfig.json
+..\..\configs\testConfig.json

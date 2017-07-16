@@ -7,7 +7,5 @@
 7
 8
 9
---deck
-1761
 -s
-..\configs\testConfig.json
+..\..\configs\testConfig.json
