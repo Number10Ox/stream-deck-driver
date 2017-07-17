@@ -1,3 +1,5 @@
 --location
 node_modules
 imagecache
+.log
+.out
