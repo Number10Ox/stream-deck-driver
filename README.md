@@ -12,5 +12,6 @@ The application takes a JSON configuration file that specifies
   - Overlayed button text
   - DOS command to be executed when button pressed
 
+### Example
 
-![Alt text](media/ArkhamStreamDeck.png?raw=true "Title")
+![Alt text](media/ArkhamStreamDeck.png?style=centerme "Title")
