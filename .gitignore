@@ -3,3 +3,5 @@ node_modules
 imagecache
 .log
 .out
+games/arkham/images
+icons/streamdeck/game-icons

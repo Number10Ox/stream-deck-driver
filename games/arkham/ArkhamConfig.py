@@ -5,6 +5,27 @@ from pprint import pprint
 import requests
 import urllib
 
+#
+# ArkhamConfig : tool for StreamDeck related configuration for Arkham Horror LCG.
+# This tool takes a list AH LCG of cards specified either individually, from
+# decks, or from a deck list. It
+# 
+#   - Generates a configuration file for the StreamDeckDriver tool
+#   - Downloads images for specified cards
+#
+# Arguments
+#
+# -f List of streamdeck buttons to which cards will be assigned (required argument)
+# -o List of streamdeck buttons for folders on main page that won't be populated with cards. StreamDeckDriver
+#    needs to know this so it can keep track of state of StreamDeck
+# -s File name for StreamDeck configuration file to be output by this tool
+# -d list of ArkamDDB deck ids
+# -c list of AkhamDB card ids
+# -p list of ArkahmDB pack ids
+#
+# Arguments can be specified from a file using '@filename'
+#
+
 # REST command to get data for all cards:
 # curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET https://arkhamdb.com/api/public/cards/
 #
@@ -83,6 +104,8 @@ def downloadCardImage(cardImageUrl, imageDirectory):
 	if os.path.exists(imagePath) != True:
 		print("Saving %s ...", imagePath)
 		urllib.urlretrieve(ARKDAMDB_BASE_URL + cardImageUrl, imageDirectory + imageFileName)
+	else:
+		print "Image already exists for: " + imagePath
 
 
 def generateConfiguration(cardList, folders, otherFolders):
@@ -99,7 +122,7 @@ def generateConfiguration(cardList, folders, otherFolders):
 	configuration['folder_list'] = []
 
 	# Go through list of configurable folders and configure buttons from card list
-	cardQueue = cardList
+	cardQueue = cardList[:]
 	# Populate folders with cards
 	for folderId in folders:
 
@@ -152,8 +175,12 @@ def generateConfiguration(cardList, folders, otherFolders):
 	return configuration
 
 def extractCardId(json):
-	print json['code'];
-	return json['code']
+	if CARD_ID_KEY in json:
+		print json[CARD_ID_KEY];
+	else:
+		print json
+
+	return json[CARD_ID_KEY]
 
 def main():
 
@@ -199,7 +226,7 @@ def main():
 	cardList.sort(key=extractCardId, reverse=True)
 
 	for card in cardList:
-		print "card code:" + card['code']
+		print "card code:" + card[CARD_ID_KEY]
 
 	cardCount = len(cardList)
 	print "NUMBER OF CARDS: " + str(cardCount)
@@ -211,6 +238,7 @@ def main():
 	f = open(args.streamdeck_file, 'w')
 	f.write(json.dumps(configuration))
 
+	print "Downloading images..."
 	downloadCardImages(cardList, IMAGE_CACHE_DIR)
 
 	#allInvestigatorCardsList = loadAllInvestigatorCardsList()

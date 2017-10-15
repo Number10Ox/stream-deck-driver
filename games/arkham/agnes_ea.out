@@ -1,0 +1,199 @@
+Loading card: https://arkhamdb.com/api/public/card/03039
+Loading card: https://arkhamdb.com/api/public/card/01060
+Loading card: https://arkhamdb.com/api/public/card/03034
+Loading card: https://arkhamdb.com/api/public/card/03036
+Loading card: https://arkhamdb.com/api/public/card/01064
+Loading card: https://arkhamdb.com/api/public/card/01065
+Loading card: https://arkhamdb.com/api/public/card/03033
+Loading card: https://arkhamdb.com/api/public/card/01063
+Loading card: https://arkhamdb.com/api/public/card/02028
+Loading card: https://arkhamdb.com/api/public/card/01000
+Loading card: https://arkhamdb.com/api/public/card/01080
+Loading card: https://arkhamdb.com/api/public/card/01088
+Loading card: https://arkhamdb.com/api/public/card/01079
+Loading card: https://arkhamdb.com/api/public/card/01059
+Loading card: https://arkhamdb.com/api/public/card/01072
+Loading card: https://arkhamdb.com/api/public/card/02032
+Loading card: https://arkhamdb.com/api/public/card/02033
+Loading card: https://arkhamdb.com/api/public/card/02111
+Loading card: https://arkhamdb.com/api/public/card/01013
+Loading card: https://arkhamdb.com/api/public/card/01012
+Loading card: https://arkhamdb.com/api/public/card/01090
+Loading card: https://arkhamdb.com/api/public/card/01093
+Loading card: https://arkhamdb.com/api/public/card/02059
+Loading card: https://arkhamdb.com/api/public/card/02060
+Loading card: https://arkhamdb.com/api/public/card/02041
+Loading card: https://arkhamdb.com/api/public/card/02045
+Loading card: https://arkhamdb.com/api/public/card/02046
+Loading card: https://arkhamdb.com/api/public/card/02047
+Loading card: https://arkhamdb.com/api/public/card/02042
+Loading card: https://arkhamdb.com/api/public/card/02043
+Loading card: https://arkhamdb.com/api/public/card/02044
+Loading card: https://arkhamdb.com/api/public/card/02054
+Loading card: https://arkhamdb.com/api/public/card/02058
+Loading card: https://arkhamdb.com/api/public/card/02061
+Loading card: https://arkhamdb.com/api/public/card/02057
+Loading card: https://arkhamdb.com/api/public/card/01165
+Loading card: https://arkhamdb.com/api/public/card/01177
+Loading card: https://arkhamdb.com/api/public/card/02086
+Loading card: https://arkhamdb.com/api/public/card/02087
+Loading card: https://arkhamdb.com/api/public/card/02102
+Loading card: https://arkhamdb.com/api/public/card/02101
+Loading card: https://arkhamdb.com/api/public/card/02100
+Loading card: https://arkhamdb.com/api/public/card/02084
+Loading card: https://arkhamdb.com/api/public/card/02085
+Loading card: https://arkhamdb.com/api/public/card/02083
+Loading card: https://arkhamdb.com/api/public/card/02090
+Loading card: https://arkhamdb.com/api/public/card/01174
+Loading card: https://arkhamdb.com/api/public/card/01178
+Loading card: https://arkhamdb.com/api/public/card/02091
+03039
+01060
+03034
+03036
+01064
+01065
+03033
+01063
+02028
+01000
+01080
+01088
+01079
+01059
+01072
+02032
+02033
+02111
+01013
+01012
+01090
+01093
+02059
+02060
+02041
+02045
+02046
+02047
+02042
+02043
+02044
+02054
+02058
+02061
+02057
+01165
+01177
+02086
+02087
+02102
+02101
+02100
+02084
+02085
+02083
+02090
+01174
+01178
+02091
+card code:03039
+card code:03036
+card code:03034
+card code:03033
+card code:02111
+card code:02102
+card code:02101
+card code:02100
+card code:02091
+card code:02090
+card code:02087
+card code:02086
+card code:02085
+card code:02084
+card code:02083
+card code:02061
+card code:02060
+card code:02059
+card code:02058
+card code:02057
+card code:02054
+card code:02047
+card code:02046
+card code:02045
+card code:02044
+card code:02043
+card code:02042
+card code:02041
+card code:02033
+card code:02032
+card code:02028
+card code:01178
+card code:01177
+card code:01174
+card code:01165
+card code:01093
+card code:01090
+card code:01088
+card code:01080
+card code:01079
+card code:01072
+card code:01065
+card code:01064
+card code:01063
+card code:01060
+card code:01059
+card code:01013
+card code:01012
+card code:01000
+NUMBER OF CARDS: 49
+NO IMAGE: skipping card Random Basic Weakness
+Downloading images...
+('Saving %s ...', u'images/03039.jpg')
+('Saving %s ...', u'images/03036.jpg')
+('Saving %s ...', u'images/03034.png')
+('Saving %s ...', u'images/03033.png')
+Image already exists for: images/02111.png
+('Saving %s ...', u'images/02102.jpg')
+('Saving %s ...', u'images/02101.jpg')
+('Saving %s ...', u'images/02100.jpg')
+('Saving %s ...', u'images/02091.jpg')
+('Saving %s ...', u'images/02090.jpg')
+('Saving %s ...', u'images/02087.jpg')
+('Saving %s ...', u'images/02086.jpg')
+('Saving %s ...', u'images/02085.jpg')
+('Saving %s ...', u'images/02084.jpg')
+('Saving %s ...', u'images/02083.jpg')
+('Saving %s ...', u'images/02061.jpg')
+('Saving %s ...', u'images/02060.jpg')
+('Saving %s ...', u'images/02059.jpg')
+('Saving %s ...', u'images/02058.jpg')
+('Saving %s ...', u'images/02057.jpg')
+('Saving %s ...', u'images/02054.jpg')
+('Saving %s ...', u'images/02047.jpg')
+('Saving %s ...', u'images/02046.jpg')
+('Saving %s ...', u'images/02045.jpg')
+('Saving %s ...', u'images/02044.jpg')
+('Saving %s ...', u'images/02043.jpg')
+('Saving %s ...', u'images/02042.jpg')
+('Saving %s ...', u'images/02041.jpg')
+Image already exists for: images/02033.png
+Image already exists for: images/02032.jpg
+Image already exists for: images/02028.png
+('Saving %s ...', u'images/01178.jpg')
+('Saving %s ...', u'images/01177.jpg')
+Image already exists for: images/01174.jpg
+('Saving %s ...', u'images/01165.png')
+Image already exists for: images/01093.png
+Image already exists for: images/01090.png
+Image already exists for: images/01088.jpg
+Image already exists for: images/01080.png
+Image already exists for: images/01079.jpg
+Image already exists for: images/01072.jpg
+Image already exists for: images/01065.jpg
+Image already exists for: images/01064.jpg
+Image already exists for: images/01063.png
+Image already exists for: images/01060.png
+Image already exists for: images/01059.png
+Image already exists for: images/01013.jpg
+Image already exists for: images/01012.jpg
+('No image for %s', u'Random Basic Weakness')
